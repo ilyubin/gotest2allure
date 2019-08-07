@@ -14,7 +14,7 @@ func TestGenerateAllureResults(t *testing.T) {
 
 	t.Run("test 2 failed", func(t *testing.T) {
 		t.Log("step c")
-		assert.False(t, true)
+		assert.True(t, true)
 	})
 
 	t.Run("test 3 passed", func(t *testing.T) {

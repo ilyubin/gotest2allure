@@ -17,7 +17,6 @@ type AllureResult struct {
 	HistoryID     string       `json:"historyId"`
 	FullName      string       `json:"fullName"`
 	Labels        []Label      `json:"labels"`
-	//fileUUID      string
 }
 
 type StatusDetail struct {
@@ -37,6 +36,7 @@ type Attachment struct {
 	Name   string `json:"name"`
 	Source string `json:"source"`
 	Type   string `json:"type"`
+	Data   string `json:"-"`
 }
 
 type Label struct {
@@ -54,7 +54,6 @@ type AllureContainer struct {
 	Start    int64    `json:"start"`
 	Stop     int64    `json:"stop"`
 	name     string
-	//fileUUID string
 }
 
 type Before struct {

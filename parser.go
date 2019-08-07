@@ -5,13 +5,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	uuid "github.com/satori/go.uuid"
 	"io"
 	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
+)
+
+const (
+	run = "run"
 )
 
 func parseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
@@ -58,10 +63,11 @@ func trimGoTestEvents(events []*GoTestEvent) []*GoTestEvent {
 func extractContainers(events []*GoTestEvent) []*AllureContainer {
 	containers := make([]*AllureContainer, 0)
 	for _, t2 := range events {
-		if t2.Action == "run" && !strings.ContainsAny(t2.Test, "/") {
+
+		if t2.Action == run && !strings.ContainsAny(t2.Test, "/") {
 			container := &AllureContainer{
-				UUID:  sUuid(),
-				name:  t2.Test,
+				UUID: sUUID(),
+				name: t2.Test,
 				//Start: t2.Time.UnixNano() / int64(time.Millisecond),
 			}
 			containers = append(containers, container)
@@ -77,9 +83,9 @@ func extractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 		//if len(splits) == 1 {
 		//	continue
 		//}
-		if t2.Action == "run" {
-		//if t2.Action == "run" && len(splits) == 2 {
-			_uuid := sUuid()
+		if t2.Action == run {
+			//if t2.Action == "run" && len(splits) == 2 {
+			_uuid := sUUID()
 
 			for _, container := range containers {
 				if container.name == splits[0] {
@@ -92,8 +98,8 @@ func extractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 				Name:      t2.Test,
 				FullName:  t2.Test,
 				Start:     t2.Time.UnixNano() / int64(time.Millisecond),
-				HistoryID: sUuid(),
-				Labels: getLabels(splits),
+				HistoryID: sUUID(),
+				Labels:    getLabels(splits),
 			}
 			results = append(results, result)
 		}
@@ -107,14 +113,17 @@ func extractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 				if result.Name == t3.Test {
 					if strings.Contains(t3.Output, "--- PASS:") {
 						result.Status = "passed"
+						result.Stop = result.Start + elapsedMilliSeconds(t3.Output)
 						continue
 					}
 					if strings.Contains(t3.Output, "--- FAIL:") {
 						result.Status = "failed"
+						result.Stop = result.Start + elapsedMilliSeconds(t3.Output)
 						continue
 					}
 					if strings.Contains(t3.Output, "--- SKIP:") {
 						result.Status = "skipped"
+						result.Stop = result.Start + 1
 						continue
 					}
 
@@ -148,6 +157,15 @@ func extractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 						Name:   output,
 						Status: "passed",
 					}
+					if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
+						attachment := Attachment{
+							Name:   "curl",
+							Source: sUUID() + "-attachment.txt",
+							Type:   "text/plain",
+						}
+						step.Attachments = append(step.Attachments, attachment)
+						printAttachment(attachment, output)
+					}
 
 					result.Steps = append(result.Steps, step)
 				}
@@ -155,6 +173,13 @@ func extractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 		}
 	}
 	return results
+}
+
+func elapsedMilliSeconds(output string) int64 {
+	regexStatus := regexp.MustCompile(`--- (PASS|FAIL|SKIP): (.+) \((\d+\.\d+)(?: seconds|s)\)`)
+	matches := regexStatus.FindStringSubmatch(output)
+	elapsed := parseSeconds(matches[3])
+	return elapsed.Nanoseconds() / 1000000
 }
 
 func getLabels(splits []string) []Label {
@@ -197,7 +222,7 @@ func getLabels(splits []string) []Label {
 	}
 }
 
-func sUuid() string {
+func sUUID() string {
 	uuid4, _ := uuid.NewV4()
 	return fmt.Sprintf("%s", uuid4)
 }
@@ -205,6 +230,11 @@ func sUuid() string {
 func createFolderForAllureResults() {
 	_ = os.RemoveAll("allure-results")
 	_ = os.MkdirAll("allure-results", os.ModePerm)
+}
+
+func printAttachment(attachment Attachment, output string) {
+	bOutput := []byte(output)
+	_ = ioutil.WriteFile(fmt.Sprintf("allure-results/%s", attachment.Source), bOutput, 0644)
 }
 
 func printResults(results []*AllureResult) {
@@ -227,4 +257,12 @@ func prettyPrint(b []byte) ([]byte, error) {
 	var out bytes.Buffer
 	err := json.Indent(&out, b, "", "    ")
 	return out.Bytes(), err
+}
+
+func parseSeconds(t string) time.Duration {
+	if t == "" {
+		return time.Duration(0)
+	}
+	d, _ := time.ParseDuration(t + "s")
+	return d
 }

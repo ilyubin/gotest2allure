@@ -1,5 +1,5 @@
 APP?=gotest2allure
-RELEASE?=1.0.0
+RELEASE?=1.0.1
 GOOS?=darwin
 
 COMMIT?=$(shell git rev-parse --short HEAD)
@@ -14,3 +14,15 @@ build: clean
 .PHONY: clean
 clean:
 	@rm -f bin/${GOOS}/${APP}
+
+.PHONY: test
+test:
+	go test
+
+.PHONY: all
+all:
+	ls
+
+.PHONY: lint
+lint:
+	golangci-lint run

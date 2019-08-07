@@ -11,7 +11,7 @@ func main() {
 
 	go func() {
 		defer pipew.Close()
-		io.Copy(pipew, os.Stdin)
+		_, _ = io.Copy(pipew, os.Stdin)
 	}()
 
 	events := trimGoTestEvents(parseJsonsToGoTestEvents(piper))

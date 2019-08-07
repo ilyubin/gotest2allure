@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParser(t *testing.T) {
-	file, err := os.Open("testdata/03-cases.txt")
+	file, err := os.Open("testdata/04-cases.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
