@@ -1,6 +1,13 @@
 # gotest2allure
 Adapter for `go test` to `allure`
 
+
+## Install
+
+```bash
+go get github.com/ilyubin/gotest2allure
+```
+
 ## Usage
 
 ```bash
