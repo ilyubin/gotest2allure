@@ -1,12 +1,10 @@
-package main
+package parser
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -19,7 +17,7 @@ const (
 	run = "run"
 )
 
-func parseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
+func ParseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
 	reader := bufio.NewReader(file)
 	list := make([]*GoTestEvent, 0)
 	for {
@@ -40,7 +38,7 @@ func parseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
 	return list
 }
 
-func trimGoTestEvents(events []*GoTestEvent) []*GoTestEvent {
+func TrimGoTestEvents(events []*GoTestEvent) []*GoTestEvent {
 	list := make([]*GoTestEvent, 0)
 	for _, event := range events {
 		if strings.HasSuffix(event.Output, "\n") {
@@ -60,7 +58,7 @@ func trimGoTestEvents(events []*GoTestEvent) []*GoTestEvent {
 	return list
 }
 
-func extractContainers(events []*GoTestEvent) []*AllureContainer {
+func ExtractContainers(events []*GoTestEvent) []*AllureContainer {
 	containers := make([]*AllureContainer, 0)
 	for _, t2 := range events {
 
@@ -76,7 +74,7 @@ func extractContainers(events []*GoTestEvent) []*AllureContainer {
 	return containers
 }
 
-func extractResults(events []*GoTestEvent, containers []*AllureContainer) []*AllureResult {
+func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) []*AllureResult {
 	results := make([]*AllureResult, 0)
 	for _, t2 := range events {
 		splits := strings.Split(t2.Test, "/")
@@ -157,15 +155,15 @@ func extractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 						Name:   output,
 						Status: "passed",
 					}
-					if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
-						attachment := Attachment{
-							Name:   "curl",
-							Source: sUUID() + "-attachment.txt",
-							Type:   "text/plain",
-						}
-						step.Attachments = append(step.Attachments, attachment)
-						printAttachment(attachment, output)
-					}
+					//if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
+					//	attachment := Attachment{
+					//		Name:   "curl",
+					//		Source: sUUID() + "-attachment.txt",
+					//		Type:   "text/plain",
+					//	}
+					//	//step.Attachments = append(step.Attachments, attachment)
+					//	//printAttachment(attachment, output)
+					//}
 
 					result.Steps = append(result.Steps, step)
 				}
@@ -227,36 +225,9 @@ func sUUID() string {
 	return fmt.Sprintf("%s", uuid4)
 }
 
-func createFolderForAllureResults() {
-	_ = os.RemoveAll("allure-results")
-	_ = os.MkdirAll("allure-results", os.ModePerm)
-}
-
-func printAttachment(attachment Attachment, output string) {
-	bOutput := []byte(output)
-	_ = ioutil.WriteFile(fmt.Sprintf("allure-results/%s", attachment.Source), bOutput, 0644)
-}
-
-func printResults(results []*AllureResult) {
-	for _, result := range results {
-		bResult, _ := json.Marshal(result)
-		bResult2, _ := prettyPrint(bResult)
-		_ = ioutil.WriteFile(fmt.Sprintf("allure-results/%s-result.json", result.UUID), bResult2, 0644)
-	}
-}
-
-func printContainers(containers []*AllureContainer) {
-	for _, container := range containers {
-		bContainer, _ := json.Marshal(container)
-		bContainer2, _ := prettyPrint(bContainer)
-		_ = ioutil.WriteFile(fmt.Sprintf("allure-results/%s-container.json", container.UUID), bContainer2, 0644)
-	}
-}
-
-func prettyPrint(b []byte) ([]byte, error) {
-	var out bytes.Buffer
-	err := json.Indent(&out, b, "", "    ")
-	return out.Bytes(), err
+func CreateOutputFolder(folder string) {
+	_ = os.RemoveAll(folder)
+	_ = os.MkdirAll(folder, os.ModePerm)
 }
 
 func parseSeconds(t string) time.Duration {

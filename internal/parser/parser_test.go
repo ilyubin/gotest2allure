@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"os"
@@ -13,25 +13,25 @@ func TestParser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	events := parseJsonsToGoTestEvents(file)
+	events := ParseJsonsToGoTestEvents(file)
 
 	assert.NotEmpty(t, events)
 
-	events = trimGoTestEvents(events)
+	events = TrimGoTestEvents(events)
 
 	assert.NotEmpty(t, events)
 
-	containers := extractContainers(events)
+	containers := ExtractContainers(events)
 
-	results := extractResults(events, containers)
+	results := ExtractResults(events, containers)
 
 	assert.NotEmpty(t, results)
 
-	createFolderForAllureResults()
+	CreateOutputFolder("allure-results")
 
-	printContainers(containers)
+	PrintContainers(containers)
 
-	printResults(results)
+	PrintResults(results)
 
 	assert.NotEmpty(t, results)
 }

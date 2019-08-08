@@ -20,9 +20,9 @@
       name: Golangci linter
       entry: make lint
 
-- repo: local
-  hooks:
-    - id: unit-tests
-      language: system
-      name: Unit tests
-      entry: make test
+#- repo: local
+#  hooks:
+#    - id: unit-tests
+#      language: system
+#      name: Unit tests
+#      entry: make test
