@@ -18,5 +18,5 @@ allure serve allure-results
 
 ## Versions
 
-1.0.0 first stable alpha version
-1.0.1 parse result duration
+- 1.0.1 parse result duration
+- 1.0.0 first stable alpha version
