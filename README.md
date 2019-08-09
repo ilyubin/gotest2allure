@@ -5,7 +5,8 @@ Adapter for `go test` to `allure`
 ## Install
 
 ```bash
-go get github.com/ilyubin/gotest2allure
+go get github.com/ilyubin/gotest2allure/cmd/gotest2allure
+
 ```
 
 ## Usage

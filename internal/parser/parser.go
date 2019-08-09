@@ -221,7 +221,7 @@ func getLabels(splits []string) []Label {
 }
 
 func sUUID() string {
-	uuid4, _ := uuid.NewV4()
+	uuid4 := uuid.NewV4()
 	return fmt.Sprintf("%s", uuid4)
 }
 
