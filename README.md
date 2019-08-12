@@ -12,9 +12,14 @@ go get github.com/ilyubin/gotest2allure/cmd/gotest2allure
 ## Usage
 
 ```bash
-go test -json > tests.txt
-./gotest2allure -f tests.txt -o allure-results 
+go test -json > json-report.txt
+./gotest2allure -f json-report.txt -o allure-results 
 allure serve allure-results
+```
+
+
+```bash
+go test -tags e2e -json ./e2e/... > json-report.txt
 ```
 
 ## Inspired by
