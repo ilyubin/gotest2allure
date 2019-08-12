@@ -41,6 +41,6 @@ func main() {
 	results := parser.ExtractResults(events, containers)
 
 	parser.CreateOutputFolder(outputFlag)
-	parser.PrintContainers(containers)
-	parser.PrintResults(results)
+	parser.PrintContainers(outputFlag, containers)
+	parser.PrintResults(outputFlag, results)
 }

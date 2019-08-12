@@ -5,27 +5,28 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"path"
 )
 
-func PrintResults(results []*AllureResult) {
+func PrintResults(outputFlag string, results []*AllureResult) {
 	for _, result := range results {
 		bResult, _ := json.Marshal(result)
 		bResult2, _ := prettyPrint(bResult)
-		_ = ioutil.WriteFile(fmt.Sprintf("allure-results/%s-result.json", result.UUID), bResult2, 0644)
+		_ = ioutil.WriteFile(path.Join(outputFlag, fmt.Sprintf("%s-result.json", result.UUID)), bResult2, 0644)
 	}
 }
 
-func PrintContainers(containers []*AllureContainer) {
+func PrintContainers(outputFlag string, containers []*AllureContainer) {
 	for _, container := range containers {
 		bContainer, _ := json.Marshal(container)
 		bContainer2, _ := prettyPrint(bContainer)
-		_ = ioutil.WriteFile(fmt.Sprintf("allure-results/%s-container.json", container.UUID), bContainer2, 0644)
+		_ = ioutil.WriteFile(path.Join(outputFlag, fmt.Sprintf("%s-container.json", container.UUID)), bContainer2, 0644)
 	}
 }
 
-func PrintAttachment(attachment Attachment, output string) {
+func PrintAttachment(outputFlag string, attachment Attachment, output string) {
 	bOutput := []byte(output)
-	_ = ioutil.WriteFile(fmt.Sprintf("allure-results/%s", attachment.Source), bOutput, 0644)
+	_ = ioutil.WriteFile(path.Join(outputFlag, fmt.Sprintf("%s", attachment.Source)), bOutput, 0644)
 }
 
 func prettyPrint(b []byte) ([]byte, error) {
