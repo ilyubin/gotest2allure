@@ -103,7 +103,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 		}
 	}
 	var isErrorEventContext bool
-	for _, t3 := range events {
+	for it3, t3 := range events {
 		//splits := strings.Split(t3.Test, "/")
 		//if t3.Action == "output" && len(splits) == 2 && !strings.HasPrefix(t3.Output, "===") {
 		if t3.Action == "output" && !strings.HasPrefix(t3.Output, "===") {
@@ -146,6 +146,14 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 						continue
 					}
 					if strings.HasPrefix(output, "Test:") {
+						result.StatusDetails.Trace += "\n" + output
+						isErrorEventContext = false
+						if strings.HasPrefix(reg.ReplaceAllString(events[it3+1].Output, "${1}"), "Messages:") {
+							isErrorEventContext = true
+						}
+						continue
+					}
+					if strings.HasPrefix(output, "Messages:") {
 						result.StatusDetails.Trace += "\n" + output
 						isErrorEventContext = false
 						continue

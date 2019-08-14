@@ -8,7 +8,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	file, err := os.Open("../../testdata/04-cases.txt")
+	file, err := os.Open("../../testdata/unknown-status.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
