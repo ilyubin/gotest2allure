@@ -64,7 +64,7 @@ func ExtractContainers(events []*GoTestEvent) []*AllureContainer {
 
 		if t2.Action == actionRun && !strings.ContainsAny(t2.Test, "/") {
 			container := &AllureContainer{
-				UUID: sUUID(),
+				UUID: uuid.NewV4(),
 				name: t2.Test,
 			}
 			containers = append(containers, container)
@@ -78,7 +78,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 	for _, event := range events {
 		splits := strings.Split(event.Test, "/")
 		if event.Action == actionRun {
-			_uuid := sUUID()
+			_uuid := uuid.NewV4()
 
 			for _, container := range containers {
 				if container.name == splits[0] {
@@ -91,7 +91,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 				Name:      event.Test,
 				FullName:  event.Test,
 				Start:     event.Time.UnixNano() / int64(time.Millisecond),
-				HistoryID: sUUID(),
+				HistoryID: uuid.NewV4(),
 				Labels:    getLabels(splits),
 			}
 			results[event.Test] = result
@@ -251,9 +251,4 @@ func getLabels(splits []string) []Label {
 			Value: splits[len(splits)-2],
 		},
 	}
-}
-
-func sUUID() string {
-	uuid4 := uuid.NewV4()
-	return fmt.Sprintf("%s", uuid4)
 }

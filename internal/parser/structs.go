@@ -1,6 +1,7 @@
 package parser
 
 import (
+	uuid "github.com/satori/go.uuid"
 	"time"
 )
 
@@ -13,8 +14,8 @@ type AllureResult struct {
 	Steps         []Step       `json:"steps"`
 	Start         int64        `json:"start"`
 	Stop          int64        `json:"stop"`
-	UUID          string       `json:"uuid"`
-	HistoryID     string       `json:"historyId"`
+	UUID          uuid.UUID    `json:"uuid"`
+	HistoryID     uuid.UUID    `json:"historyId"`
 	FullName      string       `json:"fullName"`
 	Labels        []Label      `json:"labels"`
 }
@@ -47,12 +48,12 @@ type Label struct {
 // =====================================================================================================================
 
 type AllureContainer struct {
-	UUID     string   `json:"uuid"`
-	Children []string `json:"children"`
-	Befores  []Before `json:"befores"`
-	Afters   []After  `json:"afters"`
-	Start    int64    `json:"start"`
-	Stop     int64    `json:"stop"`
+	UUID     uuid.UUID   `json:"uuid"`
+	Children []uuid.UUID `json:"children"`
+	Befores  []Before    `json:"befores"`
+	Afters   []After     `json:"afters"`
+	Start    int64       `json:"start"`
+	Stop     int64       `json:"stop"`
 	name     string
 }
 
