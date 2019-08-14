@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -14,8 +13,7 @@ import (
 )
 
 const (
-	run    = "run"
-	failed = "failed"
+	run = "run"
 )
 
 func ParseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
@@ -74,15 +72,11 @@ func ExtractContainers(events []*GoTestEvent) []*AllureContainer {
 	return containers
 }
 
-func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) []*AllureResult {
-	results := make([]*AllureResult, 0)
+func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[string]*AllureResult {
+	results := make(map[string]*AllureResult)
 	for _, t2 := range events {
 		splits := strings.Split(t2.Test, "/")
-		//if len(splits) == 1 {
-		//	continue
-		//}
 		if t2.Action == run {
-			//if t2.Action == "run" && len(splits) == 2 {
 			_uuid := sUUID()
 
 			for _, container := range containers {
@@ -99,122 +93,102 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 				HistoryID: sUUID(),
 				Labels:    getLabels(splits),
 			}
-			results = append(results, result)
+			results[t2.Test] = result
 		}
 	}
 	var isErrorEventContext bool
 	var isPanicContext bool
-	for it3, t3 := range events {
-		if strings.HasPrefix(t3.Output, "===") {
+	for _, event := range events {
+		if event.Test == "" {
 			continue
 		}
-		//splits := strings.Split(t3.Test, "/")
-		//if t3.Action == "output" && len(splits) == 2 && !strings.HasPrefix(t3.Output, "===") {
-		if t3.Action == "output" {
-			for _, result := range results {
-				if result.Name == t3.Test {
-					if strings.Contains(t3.Output, "--- PASS:") {
-						result.Status = "passed"
-						result.Stop = result.Start + elapsedMilliSeconds(t3.Output)
-						continue
-					}
-					if strings.Contains(t3.Output, "--- FAIL:") {
-						result.Status = failed
-						result.Stop = result.Start + elapsedMilliSeconds(t3.Output)
-						continue
-					}
-					if strings.Contains(t3.Output, "--- SKIP:") {
-						result.Status = "skipped"
-						result.Stop = result.Start + 1
-						continue
-					}
-					// Panic in test
-					if strings.HasPrefix(t3.Output, "SIGQUIT:") {
-						result.StatusDetails.Message += "\n" + t3.Output
-						result.StatusDetails.Trace += "\n" + t3.Output
-						isPanicContext = true
-						continue
-					}
-					if isPanicContext && !strings.Contains(t3.Output, "FAIL") {
-						result.StatusDetails.Trace += "\n" + t3.Output
-						continue
-					}
-					if strings.Contains(t3.Output, "FAIL") {
-						result.Status = failed
-						//result.Stop = result.Start + elapsedMilliSeconds(t3.Output)
-						isPanicContext = false
-						continue
-					}
+		if strings.HasPrefix(event.Output, "===") {
+			continue
+		}
 
-					reg := regexp.MustCompile(`.+\.go:\d+:\s(.*)`)
-					output := reg.ReplaceAllString(t3.Output, "${1}")
+		if event.Action == "pass" {
+			result, _ := results[event.Test]
+			result.Status = "passed"
+			result.Stop = result.Start + int64(event.Elapsed*1000)
+			isPanicContext = false
+			isErrorEventContext = false
+			continue
+		}
+		if event.Action == "fail" {
+			result, _ := results[event.Test]
+			result.Status = "failed"
+			result.Stop = result.Start + int64(event.Elapsed*1000)
+			isPanicContext = false
+			isErrorEventContext = false
+			continue
+		}
+		if event.Action == "skip" {
+			result, _ := results[event.Test]
+			result.Status = "skipped"
+			result.Stop = result.Start + int64(event.Elapsed*1000)
+			isPanicContext = false
+			isErrorEventContext = false
+			continue
+		}
 
-					if output == "" {
-						continue
-					}
-					if strings.HasPrefix(output, "Error Trace:") {
-						result.StatusDetails.Trace += "\n" + output
-						isErrorEventContext = true
-						continue
-					}
-					if strings.HasPrefix(output, "Error:") {
-						result.StatusDetails.Message += "\n" + output
-						result.StatusDetails.Trace += "\n" + output
-						continue
-					}
-					if isErrorEventContext && !strings.HasPrefix(output, "Test:") {
-						result.StatusDetails.Trace += "\n" + output
-						continue
-					}
-					if strings.HasPrefix(output, "Test:") {
-						result.StatusDetails.Trace += "\n" + output
-						isErrorEventContext = false
-						if strings.HasPrefix(reg.ReplaceAllString(events[it3+1].Output, "${1}"), "Messages:") {
-							isErrorEventContext = true
-						}
-						continue
-					}
-					if strings.HasPrefix(output, "Messages:") {
-						result.StatusDetails.Trace += "\n" + output
-						isErrorEventContext = false
-						continue
-					}
-
-					step := Step{
-						Name:   output,
-						Status: "passed",
-					}
-					//if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
-					//	attachment := Attachment{
-					//		Name:   "curl",
-					//		Source: sUUID() + "-attachment.txt",
-					//		Type:   "text/plain",
-					//	}
-					//	//step.Attachments = append(step.Attachments, attachment)
-					//	//printAttachment(attachment, output)
-					//}
-
-					result.Steps = append(result.Steps, step)
-				}
+		if event.Action == "output" {
+			result, ok := results[event.Test]
+			if !ok {
+				fmt.Printf("unexpected event: %v", event)
+				continue
 			}
+
+			// Panic in test
+			if strings.HasPrefix(event.Output, "SIGQUIT:") {
+				result.StatusDetails.Message += "\n" + event.Output
+				result.StatusDetails.Trace += "\n" + event.Output
+				isPanicContext = true
+				continue
+			}
+			if isPanicContext {
+				result.StatusDetails.Trace += "\n" + event.Output
+				continue
+			}
+
+			reg := regexp.MustCompile(`.+\.go:\d+:\s(.*)`)
+			output := reg.ReplaceAllString(event.Output, "${1}")
+
+			if output == "" {
+				continue
+			}
+			if strings.HasPrefix(output, "Error Trace:") {
+				result.StatusDetails.Trace += "\n" + output
+				isErrorEventContext = true
+				continue
+			}
+			if strings.HasPrefix(output, "Error:") {
+				result.StatusDetails.Message += "\n" + output
+				result.StatusDetails.Trace += "\n" + output
+				continue
+			}
+			if isErrorEventContext {
+				result.StatusDetails.Trace += "\n" + output
+				continue
+			}
+
+			step := Step{
+				Name:   output,
+				Status: "passed",
+			}
+			//if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
+			//	attachment := Attachment{
+			//		Name:   "curl",
+			//		Source: sUUID() + "-attachment.txt",
+			//		Type:   "text/plain",
+			//	}
+			//	//step.Attachments = append(step.Attachments, attachment)
+			//	//printAttachment(attachment, output)
+			//}
+
+			result.Steps = append(result.Steps, step)
 		}
 	}
 	return results
-}
-
-func elapsedMilliSeconds(output string) int64 {
-	regexStatus := regexp.MustCompile(`--- (PASS|FAIL|SKIP): (.+) \((\d+\.\d+)(?: seconds|s)\)`)
-	matches := regexStatus.FindStringSubmatch(output)
-	elapsed := parseSeconds(matches[3])
-	return elapsed.Nanoseconds() / 1000000
-}
-
-func parseSeconds(t string) time.Duration {
-	if t == "" {
-		return time.Duration(0)
-	}
-	d, _ := time.ParseDuration(t + "s")
-	return d
 }
 
 func getLabels(splits []string) []Label {
@@ -260,9 +234,4 @@ func getLabels(splits []string) []Label {
 func sUUID() string {
 	uuid4 := uuid.NewV4()
 	return fmt.Sprintf("%s", uuid4)
-}
-
-func CreateOutputFolder(folder string) {
-	_ = os.RemoveAll(folder)
-	_ = os.MkdirAll(folder, os.ModePerm)
 }

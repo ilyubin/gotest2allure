@@ -5,10 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 )
 
-func PrintResults(outputFlag string, results []*AllureResult) {
+func CreateOutputFolder(folder string) {
+	_ = os.RemoveAll(folder)
+	_ = os.MkdirAll(folder, os.ModePerm)
+}
+
+func PrintResults(outputFlag string, results map[string]*AllureResult) {
 	for _, result := range results {
 		bResult, _ := json.Marshal(result)
 		bResult2, _ := prettyPrint(bResult)
