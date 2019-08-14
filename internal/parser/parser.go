@@ -92,7 +92,10 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 				FullName:  event.Test,
 				Start:     event.Time.UnixNano() / int64(time.Millisecond),
 				HistoryID: uuid.NewV4(),
-				Labels:    getLabels(splits),
+				Labels: append(
+					resolveSuiteLabels(splits),
+					resolvePackageLabel(event),
+				),
 			}
 			results[event.Test] = result
 		}
@@ -213,10 +216,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 	return results
 }
 
-func getLabels(splits []string) []Label {
-	if len(splits) == 0 || len(splits) == 1 {
-		return []Label{}
-	}
+func resolveSuiteLabels(splits []string) []Label {
 	if len(splits) == 2 {
 		return []Label{
 			{
@@ -237,18 +237,29 @@ func getLabels(splits []string) []Label {
 			},
 		}
 	}
-	return []Label{
-		{
-			Name:  "parentSuite",
-			Value: strings.Join(splits[:len(splits)-3], "/"),
-		},
-		{
-			Name:  "suite",
-			Value: splits[len(splits)-3],
-		},
-		{
-			Name:  "subSuite",
-			Value: splits[len(splits)-2],
-		},
+	if len(splits) > 3 {
+		return []Label{
+			{
+				Name:  "parentSuite",
+				Value: strings.Join(splits[:len(splits)-3], "/"),
+			},
+			{
+				Name:  "suite",
+				Value: splits[len(splits)-3],
+			},
+			{
+				Name:  "subSuite",
+				Value: splits[len(splits)-2],
+			},
+		}
+	}
+
+	return []Label{}
+}
+
+func resolvePackageLabel(event *GoTestEvent) Label {
+	return Label{
+		Name:  "package",
+		Value: strings.Replace(event.Package, "/", ".", -1),
 	}
 }
