@@ -180,7 +180,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			}
 
 			reg := regexp.MustCompile(`.+\.go:\d+:\s(.*)`)
-			output := reg.ReplaceAllString(event.Output, "${1}")
+			output := strings.TrimSpace(reg.ReplaceAllString(event.Output, "${1}"))
 
 			if output == "" {
 				continue
@@ -202,6 +202,11 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 
 			if strings.HasPrefix(strings.ToLower(output), "response") {
 				isRequestContext = false
+				step := Step{
+					Name:   output,
+					Status: "passed",
+				}
+				result.Steps = append(result.Steps, step)
 				continue
 			}
 			if isRequestContext {
@@ -210,7 +215,6 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			}
 			if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
 				isRequestContext = true
-				continue
 			}
 
 			step := Step{
@@ -234,7 +238,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 }
 
 func resolveSuiteLabels(splits []string) []Label {
-	if len(splits) == 2 {
+	if len(splits) >= 1 {
 		return []Label{
 			{
 				Name:  "parentSuite",
@@ -242,34 +246,34 @@ func resolveSuiteLabels(splits []string) []Label {
 			},
 		}
 	}
-	if len(splits) == 3 {
-		return []Label{
-			{
-				Name:  "parentSuite",
-				Value: splits[0],
-			},
-			{
-				Name:  "suite",
-				Value: splits[1],
-			},
-		}
-	}
-	if len(splits) > 3 {
-		return []Label{
-			{
-				Name:  "parentSuite",
-				Value: strings.Join(splits[:len(splits)-3], "/"),
-			},
-			{
-				Name:  "suite",
-				Value: splits[len(splits)-3],
-			},
-			{
-				Name:  "subSuite",
-				Value: splits[len(splits)-2],
-			},
-		}
-	}
+	//if len(splits) >= 2 {
+	//	return []Label{
+	//		{
+	//			Name:  "parentSuite",
+	//			Value: splits[0],
+	//		},
+	//		{
+	//			Name:  "suite",
+	//			Value: splits[1],
+	//		},
+	//	}
+	//}
+	//if len(splits) > 3 {
+	//	return []Label{
+	//		{
+	//			Name:  "parentSuite",
+	//			Value: strings.Join(splits[:len(splits)-3], "/"),
+	//		},
+	//		{
+	//			Name:  "suite",
+	//			Value: splits[len(splits)-3],
+	//		},
+	//		{
+	//			Name:  "subSuite",
+	//			Value: splits[len(splits)-2],
+	//		},
+	//	}
+	//}
 
 	return []Label{}
 }
