@@ -75,10 +75,17 @@ func ExtractContainers(events []*GoTestEvent) []*AllureContainer {
 
 func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[string]*AllureResult {
 	results := make(map[string]*AllureResult)
-	for _, event := range events {
-		splits := strings.Split(event.Test, "/")
+	var isErrorEventContext bool
+	var isPanicContext bool
+	var isRequestContext bool
+	for i, event := range events {
+		if event.Test == "" {
+			continue
+		}
+
 		if event.Action == actionRun {
 			_uuid := uuid.NewV4()
+			splits := strings.Split(event.Test, "/")
 
 			for _, container := range containers {
 				if container.name == splits[0] {
@@ -99,13 +106,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			}
 			results[event.Test] = result
 		}
-	}
-	var isErrorEventContext bool
-	var isPanicContext bool
-	for i, event := range events {
-		if event.Test == "" {
-			continue
-		}
+
 		if strings.HasPrefix(event.Output, "===") {
 			continue
 		}
@@ -119,6 +120,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			result.Stop = result.Start + int64(event.Elapsed*1000)
 			isPanicContext = false
 			isErrorEventContext = false
+			isRequestContext = false
 			continue
 		}
 		if event.Action == "fail" {
@@ -127,6 +129,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			result.Stop = result.Start + int64(event.Elapsed*1000)
 			isPanicContext = false
 			isErrorEventContext = false
+			isRequestContext = false
 			continue
 		}
 		if event.Action == "skip" {
@@ -135,6 +138,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			result.Stop = result.Start + int64(event.Elapsed*1000)
 			isPanicContext = false
 			isErrorEventContext = false
+			isRequestContext = false
 
 			prev := events[i-1]
 			if prev.Action != actionOutput {
@@ -193,6 +197,19 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			}
 			if isErrorEventContext {
 				result.StatusDetails.Trace += "\n" + output
+				continue
+			}
+
+			if strings.HasPrefix(strings.ToLower(output), "response") {
+				isRequestContext = false
+				continue
+			}
+			if isRequestContext {
+				result.Steps[len(result.Steps)-1].Name += output
+				continue
+			}
+			if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
+				isRequestContext = true
 				continue
 			}
 
