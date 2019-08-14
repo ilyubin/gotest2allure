@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	run = "run"
+	run    = "run"
+	failed = "failed"
 )
 
 func ParseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
@@ -66,7 +67,6 @@ func ExtractContainers(events []*GoTestEvent) []*AllureContainer {
 			container := &AllureContainer{
 				UUID: sUUID(),
 				name: t2.Test,
-				//Start: t2.Time.UnixNano() / int64(time.Millisecond),
 			}
 			containers = append(containers, container)
 		}
@@ -103,10 +103,14 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 		}
 	}
 	var isErrorEventContext bool
+	var isPanicContext bool
 	for it3, t3 := range events {
+		if strings.HasPrefix(t3.Output, "===") {
+			continue
+		}
 		//splits := strings.Split(t3.Test, "/")
 		//if t3.Action == "output" && len(splits) == 2 && !strings.HasPrefix(t3.Output, "===") {
-		if t3.Action == "output" && !strings.HasPrefix(t3.Output, "===") {
+		if t3.Action == "output" {
 			for _, result := range results {
 				if result.Name == t3.Test {
 					if strings.Contains(t3.Output, "--- PASS:") {
@@ -115,13 +119,30 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) []*All
 						continue
 					}
 					if strings.Contains(t3.Output, "--- FAIL:") {
-						result.Status = "failed"
+						result.Status = failed
 						result.Stop = result.Start + elapsedMilliSeconds(t3.Output)
 						continue
 					}
 					if strings.Contains(t3.Output, "--- SKIP:") {
 						result.Status = "skipped"
 						result.Stop = result.Start + 1
+						continue
+					}
+					// Panic in test
+					if strings.HasPrefix(t3.Output, "SIGQUIT:") {
+						result.StatusDetails.Message += "\n" + t3.Output
+						result.StatusDetails.Trace += "\n" + t3.Output
+						isPanicContext = true
+						continue
+					}
+					if isPanicContext && !strings.Contains(t3.Output, "FAIL") {
+						result.StatusDetails.Trace += "\n" + t3.Output
+						continue
+					}
+					if strings.Contains(t3.Output, "FAIL") {
+						result.Status = failed
+						//result.Stop = result.Start + elapsedMilliSeconds(t3.Output)
+						isPanicContext = false
 						continue
 					}
 
@@ -188,6 +209,14 @@ func elapsedMilliSeconds(output string) int64 {
 	return elapsed.Nanoseconds() / 1000000
 }
 
+func parseSeconds(t string) time.Duration {
+	if t == "" {
+		return time.Duration(0)
+	}
+	d, _ := time.ParseDuration(t + "s")
+	return d
+}
+
 func getLabels(splits []string) []Label {
 	if len(splits) == 0 || len(splits) == 1 {
 		return []Label{}
@@ -236,12 +265,4 @@ func sUUID() string {
 func CreateOutputFolder(folder string) {
 	_ = os.RemoveAll(folder)
 	_ = os.MkdirAll(folder, os.ModePerm)
-}
-
-func parseSeconds(t string) time.Duration {
-	if t == "" {
-		return time.Duration(0)
-	}
-	d, _ := time.ParseDuration(t + "s")
-	return d
 }
