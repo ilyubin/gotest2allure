@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	run = "run"
+	actionRun    = "run"
+	actionOutput = "output"
 )
 
 func ParseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
@@ -61,7 +62,7 @@ func ExtractContainers(events []*GoTestEvent) []*AllureContainer {
 	containers := make([]*AllureContainer, 0)
 	for _, t2 := range events {
 
-		if t2.Action == run && !strings.ContainsAny(t2.Test, "/") {
+		if t2.Action == actionRun && !strings.ContainsAny(t2.Test, "/") {
 			container := &AllureContainer{
 				UUID: sUUID(),
 				name: t2.Test,
@@ -74,9 +75,9 @@ func ExtractContainers(events []*GoTestEvent) []*AllureContainer {
 
 func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[string]*AllureResult {
 	results := make(map[string]*AllureResult)
-	for _, t2 := range events {
-		splits := strings.Split(t2.Test, "/")
-		if t2.Action == run {
+	for _, event := range events {
+		splits := strings.Split(event.Test, "/")
+		if event.Action == actionRun {
 			_uuid := sUUID()
 
 			for _, container := range containers {
@@ -87,22 +88,25 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 
 			result := &AllureResult{
 				UUID:      _uuid,
-				Name:      t2.Test,
-				FullName:  t2.Test,
-				Start:     t2.Time.UnixNano() / int64(time.Millisecond),
+				Name:      event.Test,
+				FullName:  event.Test,
+				Start:     event.Time.UnixNano() / int64(time.Millisecond),
 				HistoryID: sUUID(),
 				Labels:    getLabels(splits),
 			}
-			results[t2.Test] = result
+			results[event.Test] = result
 		}
 	}
 	var isErrorEventContext bool
 	var isPanicContext bool
-	for _, event := range events {
+	for i, event := range events {
 		if event.Test == "" {
 			continue
 		}
 		if strings.HasPrefix(event.Output, "===") {
+			continue
+		}
+		if strings.Contains(event.Output, "--- ") {
 			continue
 		}
 
@@ -128,10 +132,28 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			result.Stop = result.Start + int64(event.Elapsed*1000)
 			isPanicContext = false
 			isErrorEventContext = false
+
+			prev := events[i-1]
+			if prev.Action != actionOutput {
+				continue
+			}
+			reg := regexp.MustCompile(`(.+_test\.go:\d+):\s(.*)`)
+			trace := reg.ReplaceAllString(prev.Output, "${1}")
+			output := reg.ReplaceAllString(prev.Output, "${2}")
+			if output == "" {
+				continue
+			}
+			if strings.Contains(output, "--- SKIP:") {
+				continue
+			}
+			result.StatusDetails.Message = output
+			result.StatusDetails.Trace = trace
+			result.Steps = result.Steps[:len(result.Steps)-1]
+
 			continue
 		}
 
-		if event.Action == "output" {
+		if event.Action == actionOutput {
 			result, ok := results[event.Test]
 			if !ok {
 				fmt.Printf("unexpected event: %v", event)

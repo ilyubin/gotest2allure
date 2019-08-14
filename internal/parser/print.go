@@ -16,17 +16,41 @@ func CreateOutputFolder(folder string) {
 
 func PrintResults(outputFlag string, results map[string]*AllureResult) {
 	for _, result := range results {
-		bResult, _ := json.Marshal(result)
-		bResult2, _ := prettyPrint(bResult)
-		_ = ioutil.WriteFile(path.Join(outputFlag, fmt.Sprintf("%s-result.json", result.UUID)), bResult2, 0644)
+		bResult, err := json.Marshal(result)
+		if err != nil {
+			fmt.Printf("error marshal result: %v\n", result)
+			continue
+		}
+		bResult2, err := prettyPrint(bResult)
+		if err != nil {
+			fmt.Printf("error prettify result: %v\n", bResult)
+			continue
+		}
+		file := path.Join(outputFlag, fmt.Sprintf("%s-result.json", result.UUID))
+		err = ioutil.WriteFile(file, bResult2, 0644)
+		if err != nil {
+			fmt.Printf("error write result: %v to file: %s\n", bResult2, file)
+		}
 	}
 }
 
 func PrintContainers(outputFlag string, containers []*AllureContainer) {
 	for _, container := range containers {
-		bContainer, _ := json.Marshal(container)
-		bContainer2, _ := prettyPrint(bContainer)
-		_ = ioutil.WriteFile(path.Join(outputFlag, fmt.Sprintf("%s-container.json", container.UUID)), bContainer2, 0644)
+		bContainer, err := json.Marshal(container)
+		if err != nil {
+			fmt.Printf("error marshal container: %v\n", container)
+			continue
+		}
+		bContainer2, err := prettyPrint(bContainer)
+		if err != nil {
+			fmt.Printf("error prettify container: %v\n", bContainer)
+			continue
+		}
+		file := path.Join(outputFlag, fmt.Sprintf("%s-container.json", container.UUID))
+		err = ioutil.WriteFile(file, bContainer2, 0644)
+		if err != nil {
+			fmt.Printf("error write container: %v to file: %s\n", bContainer2, file)
+		}
 	}
 }
 
