@@ -9,6 +9,7 @@ import (
 
 func TestParser(t *testing.T) {
 	file, err := os.Open("../../testdata/unknown-status.txt")
+	//file, err := os.Open("../../testdata/panic.txt")
 	if err != nil {
 		t.Fatal(err)
 	}

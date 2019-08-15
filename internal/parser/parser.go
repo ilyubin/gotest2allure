@@ -168,7 +168,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			}
 
 			// Panic in test
-			if strings.HasPrefix(event.Output, "SIGQUIT:") {
+			if strings.HasPrefix(event.Output, "SIGQUIT:") || strings.HasPrefix(event.Output, "panic: runtime error:") && !isPanicContext {
 				result.StatusDetails.Message += "\n" + event.Output
 				result.StatusDetails.Trace += "\n" + event.Output
 				isPanicContext = true
@@ -180,7 +180,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			}
 
 			reg := regexp.MustCompile(`.+\.go:\d+:\s(.*)`)
-			output := strings.TrimSpace(reg.ReplaceAllString(event.Output, "${1}"))
+			output := reg.ReplaceAllString(event.Output, "${1}")
 
 			if output == "" {
 				continue
@@ -210,7 +210,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 				continue
 			}
 			if isRequestContext {
-				result.Steps[len(result.Steps)-1].Name += output
+				result.Steps[len(result.Steps)-1].Name += strings.TrimSpace(output)
 				continue
 			}
 			if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
@@ -218,7 +218,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			}
 
 			step := Step{
-				Name:   output,
+				Name:   strings.TrimSpace(output),
 				Status: "passed",
 			}
 			//if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
