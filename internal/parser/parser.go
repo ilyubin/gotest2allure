@@ -209,6 +209,15 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 				result.Steps = append(result.Steps, step)
 				continue
 			}
+			if strings.HasPrefix(strings.ToLower(output), "roundtrip failed") {
+				isRequestContext = false
+				step := Step{
+					Name:   output,
+					Status: "failed",
+				}
+				result.Steps = append(result.Steps, step)
+				continue
+			}
 			if isRequestContext {
 				result.Steps[len(result.Steps)-1].Name += strings.TrimSpace(output)
 				continue
