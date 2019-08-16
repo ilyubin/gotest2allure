@@ -1,5 +1,5 @@
 # gotest2allure
-Adapter for `go test` to `allure`
+Covert `go test` results to `allure`
 
 
 ## Install
@@ -15,11 +15,7 @@ Run your tests with flag `-json` and save results to the file `json-report.txt`:
 
 ```bash
 go test -json > json-report.txt
-```
-
-or for e2e tests:
-
-```bash
+// OR
 go test -tags e2e -json ./e2e/... > json-report.txt
 ```
 

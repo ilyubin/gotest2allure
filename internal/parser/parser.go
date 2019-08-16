@@ -13,8 +13,11 @@ import (
 )
 
 const (
-	actionRun    = "run"
-	actionOutput = "output"
+	actionRun           = "run"
+	actionOutput        = "output"
+	resultStatusPassed  = "passed"
+	resultStatusFailed  = "failed"
+	resultStatusSkipped = "skipped"
 )
 
 func ParseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
@@ -116,7 +119,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 
 		if event.Action == "pass" {
 			result, _ := results[event.Test]
-			result.Status = "passed"
+			result.Status = resultStatusPassed
 			result.Stop = result.Start + int64(event.Elapsed*1000)
 			isPanicContext = false
 			isErrorEventContext = false
@@ -125,7 +128,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 		}
 		if event.Action == "fail" {
 			result, _ := results[event.Test]
-			result.Status = "failed"
+			result.Status = resultStatusFailed
 			result.Stop = result.Start + int64(event.Elapsed*1000)
 			isPanicContext = false
 			isErrorEventContext = false
@@ -134,7 +137,7 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 		}
 		if event.Action == "skip" {
 			result, _ := results[event.Test]
-			result.Status = "skipped"
+			result.Status = resultStatusSkipped
 			result.Stop = result.Start + int64(event.Elapsed*1000)
 			isPanicContext = false
 			isErrorEventContext = false
@@ -202,20 +205,18 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 
 			if strings.HasPrefix(strings.ToLower(output), "response") {
 				isRequestContext = false
-				step := Step{
+				result.Steps = append(result.Steps, Step{
 					Name:   output,
 					Status: "passed",
-				}
-				result.Steps = append(result.Steps, step)
+				})
 				continue
 			}
 			if strings.HasPrefix(strings.ToLower(output), "roundtrip failed") {
 				isRequestContext = false
-				step := Step{
+				result.Steps = append(result.Steps, Step{
 					Name:   output,
 					Status: "failed",
-				}
-				result.Steps = append(result.Steps, step)
+				})
 				continue
 			}
 			if isRequestContext {
@@ -226,21 +227,15 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 				isRequestContext = true
 			}
 
-			step := Step{
-				Name:   strings.TrimSpace(output),
-				Status: "passed",
+			stepStatus := "passed"
+			if strings.Contains(strings.ToLower(output), "error") {
+				stepStatus = "failed"
 			}
-			//if strings.HasPrefix(output, "curl") || strings.HasPrefix(output, "grpc_cli") {
-			//	attachment := Attachment{
-			//		Name:   "curl",
-			//		Source: sUUID() + "-attachment.txt",
-			//		Type:   "text/plain",
-			//	}
-			//	//step.Attachments = append(step.Attachments, attachment)
-			//	//printAttachment(attachment, output)
-			//}
 
-			result.Steps = append(result.Steps, step)
+			result.Steps = append(result.Steps, Step{
+				Name:   strings.TrimSpace(output),
+				Status: stepStatus,
+			})
 		}
 	}
 	return results

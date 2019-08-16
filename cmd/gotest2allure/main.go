@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/ilyubin/gotest2allure/internal/parser"
 	"os"
 	"path/filepath"
+
+	"github.com/ilyubin/gotest2allure/internal/parser"
 )
 
 var (
