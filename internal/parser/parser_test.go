@@ -22,17 +22,13 @@ func TestParser(t *testing.T) {
 
 	assert.NotEmpty(t, events)
 
-	containers := ExtractContainers(events)
-
-	results := ExtractResults(events, containers)
+	results := ExtractResults(events)
 
 	assert.NotEmpty(t, results)
 
 	outputFolder := "allure-results"
 
 	CreateOutputFolder(outputFolder)
-
-	PrintContainers(outputFolder, containers)
 
 	PrintResults(outputFolder, results)
 

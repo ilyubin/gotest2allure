@@ -34,26 +34,6 @@ func PrintResults(outputFlag string, results map[string]*AllureResult) {
 	}
 }
 
-func PrintContainers(outputFlag string, containers []*AllureContainer) {
-	for _, container := range containers {
-		bContainer, err := json.Marshal(container)
-		if err != nil {
-			fmt.Printf("error marshal container: %v\n", container)
-			continue
-		}
-		bContainer2, err := prettyPrint(bContainer)
-		if err != nil {
-			fmt.Printf("error prettify container: %v\n", bContainer)
-			continue
-		}
-		file := path.Join(outputFlag, fmt.Sprintf("%s-container.json", container.UUID))
-		err = ioutil.WriteFile(file, bContainer2, 0644)
-		if err != nil {
-			fmt.Printf("error write container: %v to file: %s\n", bContainer2, file)
-		}
-	}
-}
-
 func PrintAttachment(outputFlag string, attachment Attachment, output string) {
 	bOutput := []byte(output)
 	_ = ioutil.WriteFile(path.Join(outputFlag, fmt.Sprintf("%s", attachment.Source)), bOutput, 0644)

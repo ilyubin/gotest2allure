@@ -38,10 +38,8 @@ func main() {
 	}
 
 	events := parser.TrimGoTestEvents(parser.ParseJsonsToGoTestEvents(f))
-	containers := parser.ExtractContainers(events)
-	results := parser.ExtractResults(events, containers)
+	results := parser.ExtractResults(events)
 
 	parser.CreateOutputFolder(outputFlag)
-	parser.PrintContainers(outputFlag, containers)
 	parser.PrintResults(outputFlag, results)
 }

@@ -47,32 +47,6 @@ type Label struct {
 
 // =====================================================================================================================
 
-type AllureContainer struct {
-	UUID     uuid.UUID   `json:"uuid"`
-	Children []uuid.UUID `json:"children"`
-	Befores  []Before    `json:"befores"`
-	Afters   []After     `json:"afters"`
-	Start    int64       `json:"start"`
-	Stop     int64       `json:"stop"`
-	name     string
-}
-
-type Before struct {
-	Name   string `json:"name"`
-	Status string `json:"status"`
-	Start  int64  `json:"start"`
-	Stop   int64  `json:"stop"`
-}
-
-type After struct {
-	Name   string `json:"name"`
-	Status string `json:"status"`
-	Start  int64  `json:"start"`
-	Stop   int64  `json:"stop"`
-}
-
-// =====================================================================================================================
-
 type GoTestEvent struct {
 	Time    time.Time `json:"Time"`
 	Action  string    `json:"Action"`

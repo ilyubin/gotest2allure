@@ -61,22 +61,7 @@ func TrimGoTestEvents(events []*GoTestEvent) []*GoTestEvent {
 	return list
 }
 
-func ExtractContainers(events []*GoTestEvent) []*AllureContainer {
-	containers := make([]*AllureContainer, 0)
-	for _, t2 := range events {
-
-		if t2.Action == actionRun && !strings.ContainsAny(t2.Test, "/") {
-			container := &AllureContainer{
-				UUID: uuid.NewV4(),
-				name: t2.Test,
-			}
-			containers = append(containers, container)
-		}
-	}
-	return containers
-}
-
-func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[string]*AllureResult {
+func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 	results := make(map[string]*AllureResult)
 	var isErrorEventContext bool
 	var isPanicContext bool
@@ -90,19 +75,13 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 			_uuid := uuid.NewV4()
 			splits := strings.Split(event.Test, "/")
 
-			for _, container := range containers {
-				if container.name == splits[0] {
-					container.Children = append(container.Children, _uuid)
-				}
-			}
-
-			time := event.Time.UnixNano() / int64(time.Millisecond)
+			_time := event.Time.UnixNano() / int64(time.Millisecond)
 			result := &AllureResult{
 				UUID:      _uuid,
 				Name:      event.Test,
 				FullName:  event.Test,
-				Start:     time,
-				Stop:      time,
+				Start:     _time,
+				Stop:      _time,
 				HistoryID: uuid.NewV4(),
 				Labels: append(
 					resolveSuiteLabels(splits),
