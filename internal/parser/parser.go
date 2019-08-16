@@ -96,11 +96,13 @@ func ExtractResults(events []*GoTestEvent, containers []*AllureContainer) map[st
 				}
 			}
 
+			time := event.Time.UnixNano() / int64(time.Millisecond)
 			result := &AllureResult{
 				UUID:      _uuid,
 				Name:      event.Test,
 				FullName:  event.Test,
-				Start:     event.Time.UnixNano() / int64(time.Millisecond),
+				Start:     time,
+				Stop:      time,
 				HistoryID: uuid.NewV4(),
 				Labels: append(
 					resolveSuiteLabels(splits),
