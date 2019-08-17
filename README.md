@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/ilyubin/gotest2allure)](https://goreportcard.com/report/github.com/ilyubin/gotest2allure)
+
 # gotest2allure
 Covert `go test` results to `allure`
 
