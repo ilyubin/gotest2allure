@@ -18,6 +18,7 @@ type AllureResult struct {
 	HistoryID     uuid.UUID    `json:"historyId"`
 	FullName      string       `json:"fullName"`
 	Labels        []Label      `json:"labels"`
+	Description   string       `json:"description"`
 }
 
 type StatusDetail struct {

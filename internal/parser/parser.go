@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/ilyubin/gotest2allure/internal/prefix"
 	"io"
 	"regexp"
 	"strings"
@@ -151,7 +152,7 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				continue
 			}
 
-			// Panic in test
+			// Handle panic in test
 			if strings.HasPrefix(event.Output, "SIGQUIT:") || strings.HasPrefix(event.Output, "panic: runtime error:") && !isPanicContext {
 				result.StatusDetails.Message += "\n" + event.Output
 				result.StatusDetails.Trace += "\n" + event.Output
@@ -169,6 +170,28 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 			if output == "" {
 				continue
 			}
+
+			// Handle prefix
+			if strings.HasPrefix(output, prefix.Feature) {
+				result.Labels = append(result.Labels, Label{
+					Name:  "feature",
+					Value: strings.Replace(output, prefix.Feature, "", 1),
+				})
+				continue
+			}
+			if strings.HasPrefix(output, prefix.Story) {
+				result.Labels = append(result.Labels, Label{
+					Name:  "story",
+					Value: strings.Replace(output, prefix.Story, "", 1),
+				})
+				continue
+			}
+			if strings.HasPrefix(output, prefix.Story) {
+				result.Description = strings.Replace(output, prefix.Description, "", 1)
+				continue
+			}
+
+			// Handle error
 			if strings.HasPrefix(output, "Error Trace:") {
 				result.StatusDetails.Trace += "\n" + output
 				isErrorEventContext = true
@@ -184,6 +207,7 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				continue
 			}
 
+			// Handle curl and grpc_cli
 			if strings.HasPrefix(strings.ToLower(output), "response") {
 				isRequestContext = false
 				result.Steps = append(result.Steps, Step{
@@ -208,6 +232,7 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				isRequestContext = true
 			}
 
+			// Mark step failed if error
 			stepStatus := "passed"
 			if strings.Contains(strings.ToLower(output), "error") {
 				stepStatus = "failed"
