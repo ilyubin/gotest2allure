@@ -1,8 +1,9 @@
 package parser
 
 import (
-	uuid "github.com/satori/go.uuid"
 	"time"
+
+	"github.com/gofrs/uuid"
 )
 
 // =====================================================================================================================

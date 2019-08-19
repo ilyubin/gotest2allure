@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/ilyubin/gotest2allure/internal/prefix"
 	"io"
 	"regexp"
 	"strings"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
+
+	"github.com/ilyubin/gotest2allure/internal/prefix"
 )
 
 const (
@@ -73,7 +74,7 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 		}
 
 		if event.Action == actionRun {
-			_uuid := uuid.NewV4()
+			_uuid := getUUID()
 			splits := strings.Split(event.Test, "/")
 
 			_time := event.Time.UnixNano() / int64(time.Millisecond)
@@ -83,7 +84,7 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				FullName:  event.Test,
 				Start:     _time,
 				Stop:      _time,
-				HistoryID: uuid.NewV4(),
+				HistoryID: getUUID(),
 				Labels: append(
 					resolveSuiteLabels(splits),
 					resolvePackageLabel(event),
@@ -245,6 +246,11 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 		}
 	}
 	return results
+}
+
+func getUUID() uuid.UUID {
+	u, _ := uuid.NewV4()
+	return u
 }
 
 func resolveSuiteLabels(splits []string) []Label {
