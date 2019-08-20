@@ -37,7 +37,8 @@ func ParseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
 		event := &GoTestEvent{}
 		err = json.Unmarshal(line, event)
 		if err != nil {
-			panic(err)
+			fmt.Printf("unmarshal error: %v", err)
+			continue
 		}
 		list = append(list, event)
 	}
