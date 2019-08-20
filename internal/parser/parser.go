@@ -15,11 +15,12 @@ import (
 )
 
 const (
-	actionRun           = "run"
-	actionOutput        = "output"
-	resultStatusPassed  = "passed"
-	resultStatusFailed  = "failed"
-	resultStatusSkipped = "skipped"
+	actionRun                     = "run"
+	actionOutput                  = "output"
+	resultStatusPassed            = "passed"
+	resultStatusFailed            = "failed"
+	resultStatusSkipped           = "skipped"
+	statusDetailsMessageFewErrors = "Few errors"
 )
 
 //ParseJsonsToGoTestEvents ...
@@ -198,6 +199,7 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 			// Handle error
 			if strings.HasPrefix(output, "Error Trace:") && isErrorEventContext {
 				result.StatusDetails.Trace += "\n"
+				result.StatusDetails.Message = statusDetailsMessageFewErrors
 			}
 			if strings.HasPrefix(output, "Error Trace:") {
 				result.StatusDetails.Trace += "\n" + output
@@ -205,12 +207,16 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				continue
 			}
 			if strings.HasPrefix(output, "Error:      \tExpected nil, but got:") {
-				result.StatusDetails.Message += "\nError:      \tExpected nil, but got:"
+				if result.StatusDetails.Message != statusDetailsMessageFewErrors {
+					result.StatusDetails.Message += "\nError:      \tExpected nil, but got:"
+				}
 				result.StatusDetails.Trace += "\n" + output
 				continue
 			}
 			if strings.HasPrefix(output, "Error:") {
-				result.StatusDetails.Message += "\n" + output
+				if result.StatusDetails.Message != statusDetailsMessageFewErrors {
+					result.StatusDetails.Message += "\n" + output
+				}
 				result.StatusDetails.Trace += "\n" + output
 				continue
 			}

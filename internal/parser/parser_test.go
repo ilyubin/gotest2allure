@@ -8,9 +8,9 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	//file, err := os.Open("../../testdata/unknown-status.txt")
+	file, err := os.Open("../../testdata/unknown-status.txt")
 	//file, err := os.Open("../../testdata/panic.txt")
-	file, err := os.Open("../../testdata/few-errors.txt")
+	//file, err := os.Open("../../testdata/few-errors.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
