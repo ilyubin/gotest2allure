@@ -8,6 +8,7 @@ import (
 
 // =====================================================================================================================
 
+//AllureResult ...
 type AllureResult struct {
 	Name          string       `json:"name"`
 	Status        string       `json:"status"`
@@ -22,11 +23,13 @@ type AllureResult struct {
 	Description   string       `json:"description"`
 }
 
+//StatusDetail ...
 type StatusDetail struct {
 	Message string `json:"message"`
 	Trace   string `json:"trace"`
 }
 
+//Step ...
 type Step struct {
 	Name        string       `json:"name"`
 	Status      string       `json:"status"`
@@ -35,6 +38,7 @@ type Step struct {
 	Stop        int64        `json:"stop"`
 }
 
+//Attachment ...
 type Attachment struct {
 	Name   string `json:"name"`
 	Source string `json:"source"`
@@ -42,6 +46,7 @@ type Attachment struct {
 	Data   string `json:"-"`
 }
 
+//Label ...
 type Label struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
@@ -49,6 +54,7 @@ type Label struct {
 
 // =====================================================================================================================
 
+//GoTestEvent - line in json-report.txt file
 type GoTestEvent struct {
 	Time    time.Time `json:"Time"`
 	Action  string    `json:"Action"`

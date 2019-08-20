@@ -22,6 +22,7 @@ const (
 	resultStatusSkipped = "skipped"
 )
 
+//ParseJsonsToGoTestEvents ...
 func ParseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
 	reader := bufio.NewReader(file)
 	list := make([]*GoTestEvent, 0)
@@ -43,6 +44,7 @@ func ParseJsonsToGoTestEvents(file io.Reader) []*GoTestEvent {
 	return list
 }
 
+//TrimGoTestEvents ...
 func TrimGoTestEvents(events []*GoTestEvent) []*GoTestEvent {
 	list := make([]*GoTestEvent, 0)
 	for _, event := range events {
@@ -63,6 +65,7 @@ func TrimGoTestEvents(events []*GoTestEvent) []*GoTestEvent {
 	return list
 }
 
+//ExtractResults ...
 func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 	results := make(map[string]*AllureResult)
 	var isErrorEventContext bool
@@ -70,6 +73,12 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 	var isRequestContext bool
 	for i, event := range events {
 		if event.Test == "" {
+			continue
+		}
+		if strings.HasPrefix(event.Output, "===") {
+			continue
+		}
+		if strings.Contains(event.Output, "--- ") {
 			continue
 		}
 
@@ -91,13 +100,6 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				),
 			}
 			results[event.Test] = result
-		}
-
-		if strings.HasPrefix(event.Output, "===") {
-			continue
-		}
-		if strings.Contains(event.Output, "--- ") {
-			continue
 		}
 
 		if event.Action == "pass" {

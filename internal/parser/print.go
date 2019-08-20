@@ -9,11 +9,13 @@ import (
 	"path"
 )
 
+//CreateOutputFolder ...
 func CreateOutputFolder(folder string) {
 	_ = os.RemoveAll(folder)
 	_ = os.MkdirAll(folder, os.ModePerm)
 }
 
+//PrintResults ...
 func PrintResults(outputFlag string, results map[string]*AllureResult) {
 	for _, result := range results {
 		bResult, err := json.Marshal(result)
@@ -32,11 +34,6 @@ func PrintResults(outputFlag string, results map[string]*AllureResult) {
 			fmt.Printf("error write result: %v to file: %s\n", bResult2, file)
 		}
 	}
-}
-
-func PrintAttachment(outputFlag string, attachment Attachment, output string) {
-	bOutput := []byte(output)
-	_ = ioutil.WriteFile(path.Join(outputFlag, fmt.Sprintf("%s", attachment.Source)), bOutput, 0644)
 }
 
 func prettyPrint(b []byte) ([]byte, error) {
