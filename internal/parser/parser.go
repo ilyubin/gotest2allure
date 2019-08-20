@@ -196,9 +196,17 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 			}
 
 			// Handle error
+			if strings.HasPrefix(output, "Error Trace:") && isErrorEventContext {
+				result.StatusDetails.Trace += "\n"
+			}
 			if strings.HasPrefix(output, "Error Trace:") {
 				result.StatusDetails.Trace += "\n" + output
 				isErrorEventContext = true
+				continue
+			}
+			if strings.HasPrefix(output, "Error:      \tExpected nil, but got:") {
+				result.StatusDetails.Message += "\nError:      \tExpected nil, but got:"
+				result.StatusDetails.Trace += "\n" + output
 				continue
 			}
 			if strings.HasPrefix(output, "Error:") {
