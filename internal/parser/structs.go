@@ -8,7 +8,7 @@ import (
 
 // =====================================================================================================================
 
-//AllureResult ...
+// AllureResult ...
 type AllureResult struct {
 	Name          string       `json:"name"`
 	Status        string       `json:"status"`
@@ -21,15 +21,16 @@ type AllureResult struct {
 	FullName      string       `json:"fullName"`
 	Labels        []Label      `json:"labels"`
 	Description   string       `json:"description"`
+	Links         []Link       `json:"links"`
 }
 
-//StatusDetail ...
+// StatusDetail ...
 type StatusDetail struct {
 	Message string `json:"message"`
 	Trace   string `json:"trace"`
 }
 
-//Step ...
+// Step ...
 type Step struct {
 	Name        string       `json:"name"`
 	Status      string       `json:"status"`
@@ -38,7 +39,7 @@ type Step struct {
 	Stop        int64        `json:"stop"`
 }
 
-//Attachment ...
+// Attachment ...
 type Attachment struct {
 	Name   string `json:"name"`
 	Source string `json:"source"`
@@ -46,10 +47,17 @@ type Attachment struct {
 	Data   string `json:"-"`
 }
 
-//Label ...
+// Label ...
 type Label struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
+}
+
+// Link ...
+type Link struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+	URL  string `json:"url"`
 }
 
 // =====================================================================================================================

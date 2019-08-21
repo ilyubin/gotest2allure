@@ -191,8 +191,17 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				})
 				continue
 			}
-			if strings.HasPrefix(output, prefix.Story) {
+			if strings.HasPrefix(output, prefix.Description) {
 				result.Description = strings.Replace(output, prefix.Description, "", 1)
+				continue
+			}
+			if strings.HasPrefix(output, prefix.Issue) {
+				issue := strings.Replace(output, prefix.Story, "", 1)
+				result.Links = append(result.Links, Link{
+					Name: issue,
+					Type: "issue",
+					URL:  issue,
+				})
 				continue
 			}
 
@@ -250,7 +259,7 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				isRequestContext = true
 			}
 
-			// Mark step failed if error
+			// Mark step failed if output has "error" text
 			stepStatus := "passed"
 			if strings.Contains(strings.ToLower(output), "error") {
 				stepStatus = "failed"
