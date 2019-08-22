@@ -21,7 +21,7 @@ func Description(t *testing.T, description string) {
 	t.Logf("%s%s", prefix.Description, description)
 }
 
-// Issue ...
+// Issue will provide a link with a small bug icon
 func Issue(t *testing.T, issue string) {
 	t.Logf("%s%s", prefix.Issue, issue)
 }

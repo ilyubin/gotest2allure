@@ -68,7 +68,7 @@ func TrimGoTestEvents(events []*GoTestEvent) []*GoTestEvent {
 }
 
 //ExtractResults ...
-func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
+func ExtractResults(events []*GoTestEvent, issuePattern string) map[string]*AllureResult {
 	results := make(map[string]*AllureResult)
 	var isErrorEventContext bool
 	var isPanicContext bool
@@ -200,7 +200,7 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				result.Links = append(result.Links, Link{
 					Name: issue,
 					Type: "issue",
-					URL:  issue,
+					URL:  fmt.Sprintf(issuePattern, issue),
 				})
 				continue
 			}

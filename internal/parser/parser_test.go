@@ -23,7 +23,7 @@ func TestParser(t *testing.T) {
 
 	assert.NotEmpty(t, events)
 
-	results := ExtractResults(events)
+	results := ExtractResults(events, "%s")
 
 	assert.NotEmpty(t, results)
 
