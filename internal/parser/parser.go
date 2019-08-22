@@ -196,7 +196,7 @@ func ExtractResults(events []*GoTestEvent) map[string]*AllureResult {
 				continue
 			}
 			if strings.HasPrefix(output, prefix.Issue) {
-				issue := strings.Replace(output, prefix.Story, "", 1)
+				issue := strings.Replace(output, prefix.Issue, "", 1)
 				result.Links = append(result.Links, Link{
 					Name: issue,
 					Type: "issue",
