@@ -37,6 +37,7 @@ type Step struct {
 	Attachments []Attachment `json:"attachments"`
 	Start       int64        `json:"start"`
 	Stop        int64        `json:"stop"`
+	Parameters  []Parameter  `json:"parameters"`
 }
 
 // Attachment ...
@@ -49,6 +50,12 @@ type Attachment struct {
 
 // Label ...
 type Label struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+// Parameter ...
+type Parameter struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }

@@ -204,6 +204,22 @@ func ExtractResults(events []*GoTestEvent, issuePattern string) map[string]*Allu
 				})
 				continue
 			}
+			//if strings.HasPrefix(output, "id") {
+			//	params := []Parameter{}
+			//	split := strings.Split(output, " ")[0]
+			//	pair := strings.Split(split, ":")
+			//	params = append(params, Parameter{
+			//		Name:  pair[0],
+			//		Value: pair[1],
+			//	})
+			//
+			//	result.Steps = append(result.Steps, Step{
+			//		Name:       strings.TrimSpace(output),
+			//		Status:     "passed",
+			//		Parameters: params,
+			//	})
+			//	continue
+			//}
 
 			// Handle error
 			if strings.HasPrefix(output, "Error Trace:") && isErrorEventContext {
