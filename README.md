@@ -24,13 +24,40 @@ go test -tags e2e -json ./e2e/... > json-report.txt
 Run `gotest2allure` from `bin` folder:
 
 ```bash
-$GOPATH/bin/gotest2allure -f json-report.txt -o allure-results 
+$GOPATH/bin/gotest2allure -f json-report.txt 
 ```
 
 Generate report with `allure`:
 
 ```bash
 allure serve allure-results
+```
+
+## Parameters
+
+* `-o` specify output directory, default `allure-results`
+* `-issuePattern` specify tracker pattern, should have substring `%s`
+
+## Allure features
+
+```go
+import "github.com/ilyubin/gotest2allure/pkg/allure"
+```
+
+### Issue
+
+```go
+allure.Issue(t, "TASK-1")
+```
+
+```bash
+$GOPATH/bin/gotest2allure -f json-report.txt -issuePattern https://my.jira.com/browse/%s
+```
+
+### Description
+
+```go
+allure.Description(t, "My detailed description")
 ```
 
 ## Inspired by
