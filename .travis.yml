@@ -1,5 +1,6 @@
+sudo: false
 language: go
-
 go:
+  - 1.11
   - tip
-  - "1.10.x"
+script: make test

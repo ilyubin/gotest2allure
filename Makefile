@@ -18,7 +18,7 @@ clean:
 
 .PHONY: test
 test:
-	go test
+	go test -v ./...
 
 .PHONY: all
 all:
