@@ -1,6 +1,7 @@
 sudo: false
 language: go
+script: go get github.com/gofrs/uuid && go get github.com/stretchr/testify
 go:
   - 1.11
-  - tip
-#script: make test
+notifications:
+  email: false
