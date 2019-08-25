@@ -48,11 +48,11 @@ func main() {
 	}
 
 	if !strings.Contains(issuePatternFrag, "%s") {
-		fmt.Println("warning: issuePattern frag shoud have %s symbol")
+		fmt.Println("warning: issuePattern frag should have %s symbol")
 		issuePatternFrag = issuePatternDefault
 	}
 	if !strings.Contains(testcasePatternFrag, "%s") {
-		fmt.Println("warning: testcasePattern frag shoud have %s symbol")
+		fmt.Println("warning: testcasePattern frag should have %s symbol")
 		testcasePatternFrag = testcasePatternDefault
 	}
 
