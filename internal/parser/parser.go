@@ -68,7 +68,7 @@ func TrimGoTestEvents(events []*GoTestEvent) []*GoTestEvent {
 }
 
 //ExtractResults ...
-func ExtractResults(events []*GoTestEvent, issuePattern string) map[string]*AllureResult {
+func ExtractResults(events []*GoTestEvent, issuePattern string, testcasePattern string) map[string]*AllureResult {
 	results := make(map[string]*AllureResult)
 	var isErrorEventContext bool
 	var isPanicContext bool
@@ -201,6 +201,15 @@ func ExtractResults(events []*GoTestEvent, issuePattern string) map[string]*Allu
 					Name: issue,
 					Type: "issue",
 					URL:  fmt.Sprintf(issuePattern, issue),
+				})
+				continue
+			}
+			if strings.HasPrefix(output, prefix.TestCase) {
+				testCase := strings.Replace(output, prefix.TestCase, "", 1)
+				result.Links = append(result.Links, Link{
+					Name: testCase,
+					Type: "test_case",
+					URL:  fmt.Sprintf(testcasePattern, testCase),
 				})
 				continue
 			}

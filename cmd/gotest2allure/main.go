@@ -11,17 +11,20 @@ import (
 )
 
 var (
-	fileFlag         string
-	outputFlag       string
-	issuePatternFrag string
+	fileFlag            string
+	outputFlag          string
+	issuePatternFrag    string
+	testcasePatternFrag string
 )
 
 const (
-	fileFlagUsage       = "tests results file"
-	outputFlagUsage     = "output results folder"
-	outputFlagDefault   = "allure-results"
-	issuePatternUsage   = "patter issue link for bug tracker"
-	issuePatternDefault = "%s"
+	fileFlagUsage          = "tests results file"
+	outputFlagUsage        = "output results folder"
+	outputFlagDefault      = "allure-results"
+	issuePatternUsage      = "pattern issue link for bug tracker"
+	issuePatternDefault    = "%s"
+	testcasePatternUsage   = "pattern testcase link for test tracker"
+	testcasePatternDefault = "%s"
 )
 
 func main() {
@@ -31,6 +34,7 @@ func main() {
 	flag.StringVar(&outputFlag, "output", outputFlagDefault, outputFlagUsage)
 	flag.StringVar(&outputFlag, "o", outputFlagDefault, outputFlagUsage)
 	flag.StringVar(&issuePatternFrag, "issuePattern", issuePatternDefault, issuePatternUsage)
+	flag.StringVar(&testcasePatternFrag, "testcasePattern", testcasePatternUsage, testcasePatternDefault)
 
 	flag.Parse()
 
@@ -45,11 +49,15 @@ func main() {
 
 	if !strings.Contains(issuePatternFrag, "%s") {
 		fmt.Println("warning: issuePattern frag shoud have %s symbol")
-		issuePatternFrag = "%s"
+		issuePatternFrag = issuePatternDefault
+	}
+	if !strings.Contains(testcasePatternFrag, "%s") {
+		fmt.Println("warning: testcasePattern frag shoud have %s symbol")
+		testcasePatternFrag = testcasePatternDefault
 	}
 
 	events := parser.TrimGoTestEvents(parser.ParseJsonsToGoTestEvents(f))
-	results := parser.ExtractResults(events, issuePatternFrag)
+	results := parser.ExtractResults(events, issuePatternFrag, testcasePatternFrag)
 
 	parser.CreateOutputFolder(outputFlag)
 	parser.PrintResults(outputFlag, results)

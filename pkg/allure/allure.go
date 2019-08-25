@@ -25,3 +25,8 @@ func Description(t *testing.T, description string) {
 func Issue(t *testing.T, issue string) {
 	t.Logf("%s%s", prefix.Issue, issue)
 }
+
+// TestCase will provide a link to testcase in test tracker
+func TestCase(t *testing.T, testcase string) {
+	t.Logf("%s%s", prefix.TestCase, testcase)
+}

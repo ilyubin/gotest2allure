@@ -9,4 +9,6 @@ const (
 	Description = "[description] "
 	// Issue ...
 	Issue = "[issue] "
+	// TestCase ...
+	TestCase = "[testcase] "
 )
