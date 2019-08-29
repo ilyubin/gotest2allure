@@ -145,6 +145,9 @@ func ExtractResults(events []*GoTestEvent, issuePattern string, testcasePattern 
 			}
 			result.StatusDetails.Message = output
 			result.StatusDetails.Trace = trace
+			if len(result.Steps) <= 0 {
+				continue
+			}
 			result.Steps = result.Steps[:len(result.Steps)-1]
 
 			continue
