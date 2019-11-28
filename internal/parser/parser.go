@@ -172,8 +172,7 @@ func ExtractResults(events []*GoTestEvent, issuePattern string, testcasePattern 
 				continue
 			}
 
-			reg := regexp.MustCompile(`.+\.go:\d+:\s(.*)`)
-			output := reg.ReplaceAllString(event.Output, "${1}")
+			output := regexp.MustCompile(`.+\.go:\d+:\s(.*)`).ReplaceAllString(event.Output, "${1}")
 
 			if output == "" {
 				continue

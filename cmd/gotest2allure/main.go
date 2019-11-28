@@ -39,12 +39,16 @@ func main() {
 	flag.Parse()
 
 	if fileFlag == "" {
-		panic("no file")
+		fmt.Println("warning: no fileFlag")
+		os.Exit(0)
+		return
 	}
 
 	f, err := os.Open(filepath.Clean(fileFlag))
-	if fileFlag == "" {
-		panic(err)
+	if err != nil {
+		fmt.Println("warning: no file")
+		os.Exit(0)
+		return
 	}
 
 	if !strings.Contains(issuePatternFrag, "%s") {
